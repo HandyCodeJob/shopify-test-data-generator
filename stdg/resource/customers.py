@@ -1,4 +1,5 @@
 import shopify
+import random
 from faker import Factory
 from pyactiveresource.connection import ResourceNotFound
 
@@ -17,13 +18,13 @@ class Customers(object):
     def generate_data(self):
 
         # We're forcing US locale since it contains the most complete providers for the Faker package.
-        fake = Factory.create(self.settings['LOCALE'])
+        fake = Factory.create(self.settings['locale'])
 
         first_name = fake.first_name()
         last_name = fake.last_name()
 
-        # config.postal_data is a DataFrame object from the pandas library.
-        state_info = config.postal_data.sample(n=1)
+        # get the state info from the postal data we loaded eariler, [[zip, st]]
+        state_info = random.sample(config.postal_data, 1)[0]
 
         customer = {
             'first_name': first_name,
@@ -32,9 +33,9 @@ class Customers(object):
                 {
                     'address1': fake.street_address(),
                     'city': fake.city(),
-                    'province_code': str(state_info.iloc[0]['state']),
+                    'province_code': str(state_info[1]),
                     'phone': fake.phone_number(),
-                    'zip': str(state_info.iloc[0]['postal_code']),
+                    'zip': str(state_info[0]),
                     'last_name': first_name,
                     'first_name': last_name,
                     'country': 'US'
@@ -64,7 +65,7 @@ class Customers(object):
 
             customers_created.append(str(new_customer.id))
 
-        with open('stdg-customers.csv', mode='a', encoding='utf-8') as customers_file:
+        with open('stdg-customers.csv', mode='a') as customers_file:
             customers_file.write('\n'.join(customers_created) + '\n')
 
         return

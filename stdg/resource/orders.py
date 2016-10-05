@@ -48,33 +48,30 @@ class Orders(object):
         line_items = []
 
         # how many different products can a single customer order?
-        sample_size = random.randint(1, int(self.settings['MAX_LINE_ITEMS']))
+        sample_size = random.randint(1, int(self.settings['max_line_items']))
 
         # get a random # of products (aka line_items) for this purchase.
         products = random.sample(self.products, sample_size)
         print("Total Products Purchased In Order: {}\n".format(len(products)))
 
         for product in products:
-            if len(product.variants) < int(self.settings['MAX_VARIANTS']):
+            if len(product.variants) < int(self.settings['max_variants']):
                 variants = product.variants
             else:
                 # generate a random seed to how big our sample size should be
-                sample_size = random.randint(1, int(self.settings['MAX_VARIANTS']))
+                sample_size = random.randint(1, int(self.settings['max_variants']))
                 variants = random.sample(product.variants, sample_size)
 
             for variant in variants:
                 line_items.append(
-                    dict(id=product.id, variant_id=variant.id,
-                         quantity=random.randint(1, int(self.settings['MAX_QUANTITY'])),
-                         fulfillment_service=self.settings['FULFILLMENT_SERVICE'], fulfillment_status=self.settings['FULFILLMENT_STATUS'])
+                    dict(
+                        id=product.id,
+                        variant_id=variant.id,
+                        quantity=random.randint(1, int(self.settings['max_quantity'])),
+                        fulfillment_service=self.settings['fulfillment_service'],
+                        fulfillment_status=self.settings['fulfillment_status'])
                 )
-
-
-
         return line_items
-
-
-    # instance methods
 
     def create(self, number_orders):
 
@@ -102,10 +99,10 @@ class Orders(object):
 
         # Write our created data to file. This is required for simple deletion later using this same tool.
         # If these files do not exist, you will have to delete the data manually through the Shopify dashboard.
-        with open('stdg-orders.csv', mode='a', encoding='utf-8') as order_file:
+        with open('stdg-orders.csv', mode='a') as order_file:
             order_file.write('\n'.join(orders_created) + '\n')
 
-        with open('stdg-customers.csv', mode='a', encoding='utf-8') as customers_file:
+        with open('stdg-customers.csv', mode='a') as customers_file:
             customers_file.write('\n'.join(customers_created) + '\n')
 
         return
