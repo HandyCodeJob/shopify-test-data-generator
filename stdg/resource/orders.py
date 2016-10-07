@@ -3,26 +3,33 @@ import shopify
 
 from pyactiveresource.connection import ResourceNotFound
 
-from stdg import config
 from stdg.resource.customers import Customers
 
 
 class Orders(object):
 
-    settings = config.settings['orders']
-
-    def __init__(self, limit_sample_size=250):
+    def __init__(self, settings=None, products=None, limit_sample_size=250):
+        if not settings:
+            from stdg import config
+            self.settings = config.settings['orders']
+        else:
+            self.settings = settings
+            shop_url = "https://%s:%s@%s.myshopify.com/admin" % (self.settings['api_key'],
+                                                                 self.settings['api_pass'],
+                                                                 self.settings['store'])
+            shopify.ShopifyResource.set_site(shop_url)
 
         # retains the max product sample size from which to create orders
-        self.products = shopify.Product.find(limit=limit_sample_size)
-
-        return
+        if products:
+            self.products = products
+        else:
+            self.products = shopify.Product.find(limit=limit_sample_size)
 
     # class methods
 
     def generate_data(self, cls):
 
-        customer = Customers()
+        customer = Customers(settings=self.settings)
 
         customer_data = customer.generate_data()
 
@@ -38,7 +45,8 @@ class Orders(object):
                 'zip': customer_data['addresses'][0]['zip'],
                 'country': 'US'
             },
-            'line_items': cls.line_items_create()
+            'line_items': cls.line_items_create(),
+            'inventory_behaviour': 'decrement_obeying_policy',
         }
 
         return order

@@ -3,28 +3,28 @@ import random
 from faker import Factory
 from pyactiveresource.connection import ResourceNotFound
 
-from stdg import config
-
 
 class Customers(object):
-    settings = config.settings['customers']
 
-    def __init__(self, locale="en_US"):
-
-        self.locale = locale
-
-        return
+    def __init__(self, settings=None):
+        if not settings:
+            from stdg import config
+            self.settings = config.settings['customers']
+        else:
+            self.settings = settings
+            shop_url = "https://%s:%s@%s.myshopify.com/admin" % (self.settings['api_key'],
+                                                                 self.settings['api_pass'],
+                                                                 self.settings['store'])
+            shopify.ShopifyResource.set_site(shop_url)
 
     def generate_data(self):
-
-        # We're forcing US locale since it contains the most complete providers for the Faker package.
-        fake = Factory.create(self.settings['locale'])
+        fake = Factory.create()
 
         first_name = fake.first_name()
         last_name = fake.last_name()
 
         # get the state info from the postal data we loaded eariler, [[zip, st]]
-        state_info = random.sample(config.postal_data, 1)[0]
+        state_info = random.sample([[85233, 'AZ']], 1)[0]
 
         customer = {
             'first_name': first_name,

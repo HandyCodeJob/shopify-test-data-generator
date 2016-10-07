@@ -5,7 +5,17 @@ import shopify
 
 class Products(object):
 
-    def __init__(self):
+    def __init__(self, settings=None):
+        if not settings:
+            from stdg import config
+            self.settings = config.settings['shopify']
+        else:
+            self.settings = settings
+            shop_url = "https://%s:%s@%s.myshopify.com/admin" % (self.settings['api_key'],
+                                                                 self.settings['api_pass'],
+                                                                 self.settings['store'])
+            shopify.ShopifyResource.set_site(shop_url)
+
         return
 
     # class methods
@@ -28,16 +38,21 @@ class Products(object):
                 {
                     "option1": fake.word(),
                     "price": str(fake.pyint()),
-                    "sku": 123
+                    "inventory_management": "shopify",
+                    "inventory_quantity": 0,
+                    "inventory_policy": "continue",
+                    "sku": 123,
                 }
             )
 
         return product_data
 
     def create(self, number_products):
+        new_products = []
 
         for counter in range(number_products):
             print("Generating Product: {0}".format(str(counter + 1)))
+            print("current site mang", shopify.Product()._site)
 
             new_product = shopify.Product().create(self.generate_data(self))
 
@@ -46,8 +61,9 @@ class Products(object):
                 # TODO: we need to loop over our error messages and print them
                 for message in new_product.errors.full_messages():
                     print("[ERROR] {0}".format(message))
-                return
-        return
+                    break
+            new_products.append(new_product)
+        return new_products
 
     def delete(self, orders=None):
 
