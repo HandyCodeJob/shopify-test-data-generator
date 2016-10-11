@@ -21,7 +21,7 @@ class Products(object):
     # class methods
 
     def generate_data(self, cls):
-        variant_count = random.randint(0, 4)
+        variant_count = random.randint(1, 4)
         fake = Factory.create()
 
         product_data = {
