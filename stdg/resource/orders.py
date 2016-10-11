@@ -45,9 +45,16 @@ class Orders(object):
                 'zip': customer_data['addresses'][0]['zip'],
                 'country': 'US'
             },
+            "financial_status": "paid",
+            "transactions": [{
+                "kind": "sale",
+                "status": "success",
+            }],
             'line_items': cls.line_items_create(),
             'inventory_behaviour': 'decrement_obeying_policy',
         }
+        cost = sum([float(line['price']) * float(line['quantity']) for line in order['line_items']])
+        order['transactions'][0]['amount'] = cost
 
         return order
 
@@ -75,6 +82,7 @@ class Orders(object):
                     dict(
                         id=product.id,
                         variant_id=variant.id,
+                        price=variant.price,
                         quantity=random.randint(1, int(self.settings['max_quantity'])),
                         fulfillment_service=self.settings['fulfillment_service'],
                         fulfillment_status=self.settings['fulfillment_status'])
